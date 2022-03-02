@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patterns</title>
+    <style>
+        .mycanvas {
+            width: 100%;
+            height: 100%;
+        }
+        body {
+            overflow-x: hidden;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <canvas class="mycanvas"></canvas>
+    <div>
+        <div>
+            <label for="">No of interations</label>
+            <input type="range" name="" id="niterations" max="1000" value="2">
+        </div>
+        <div>
+            <label for="">Type of curve</label>
+            <select name="" id="curve">
+                <option value="0">Hyperbola</option>
+                <option value="1">Parabola</option>
+                <option value="2">Ellipse</option>
+            </select>
+        </div>
+        <div>
+            <label for="">Fraction of curve to be drawn</label>
+            <input type="range" id="fac" min="0" max="10" value="1" step="0.25">
+        </div>
+    </div>
+    <script>
+        var niterations = document.querySelector('#niterations');
+        var ni = 2, curvetype = 0, fac=1;
+        niterations.addEventListener('input', (e)=>{
+            ni = Number(e.target.value);
+            drawPattern(ni, curvetype, fac);
+        })
+
+        var ct = document.querySelector('#curve');
+        ct.addEventListener('change', (e)=>{
+            curvetype = Number(e.target.value);
+            drawPattern(ni, curvetype,fac);
+        })
+
+        var fc = document.querySelector('#fac');
+        fc.addEventListener('input', (e)=>{
+            fac = Number(e.target.value);
+            drawPattern(ni, curvetype, fac);
+        })
+
+        var canvas = document.querySelector('.mycanvas');
+        var height = canvas.height, width = canvas.width;
+
+        var ctx = canvas.getContext('2d');
+
+        ctx.fillStyle = 'rgba(0, 0, 0, 1)';
+        ctx.fillRect(0, 0, width, height);
+
+        // ctx.translate(width/2, height/2);
+
+        function drawPattern(ni, ct, fac){
+            ctx.fillStyle = 'rgba(0, 0, 0, 1)';
+            ctx.fillRect(0, 0, width, height);
+
+            var degToRad = deg => deg * Math.PI / 180;
+            var transformed = (r,t,o) => [r*Math.cos(degToRad(t-o)), r*Math.sin(degToRad(t-o))];
+            var drawHyperbola = (x,y, radius, n, offset=0) => {
+                ctx.moveTo(x,y);
+                
+                for(var i=1; i<=n; i++){
+                    // var fac =0.5;
+                    var r;
+                    if(ct == '0') r = radius/(2-3*Math.sin(degToRad(i*360/n)));
+                    // var r = radius;
+                    if(ct == '2') r = radius/(1-0.65*Math.cos(degToRad(i*360*fac/n)));
+                    if(ct == '1') r = radius/(1+Math.cos(degToRad(i*360*fac/n)));
+                    if(i<n/2) ctx.lineWidth = 5*i/n;
+                    else ctx.lineWidth = 5*((n/2)-(i%(n/2)))/n;
+                    ctx.beginPath();
+                    // ctx.moveTo(x,y);
+                    var tfd1 = transformed(r,i*360*fac/n,offset), tfd2 = transformed(r, (i+1)*360*fac/n, offset);
+                    ctx.moveTo(x+tfd1[0], y+tfd1[1]);
+                    ctx.lineTo(x+tfd2[0], y+tfd2[1]);
+                    ctx.stroke();
+                }
+            }
+            
+            ctx.fillStyle = 'pink';
+            ctx.strokeStyle = 'red';
+            // drawHyperbola(0, 0, 40, 3);
+
+            var n=15;
+            for(var i=0; i<n; i++){
+                drawHyperbola(width/2, height/2, 40, ni, (i*360/n));
+            }
+
+            ctx.strokeStyle = 'pink';
+            for(var i=0; i<n; i++){
+                drawHyperbola(width/2, height/2, 40, ni, 30+(i*360/n));
+            }
+
+            // ctx.strokeStyle = 'yellow';
+            // for(var i=0; i<n; i++){
+            //     drawHyperbola(width/2, height/2, 40, ni, 60+(i*360/n));
+            // }
+        }
+
+        drawPattern(ni, curvetype, fac);
+    </script>
+</body>
+</html>
